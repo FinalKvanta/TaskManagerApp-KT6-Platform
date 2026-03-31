@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:TaskManagerApp.ViewModels"
+             x:Class="TaskManagerApp.Views.TaskDetailPage"
+             Title="Детали задачи">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="16" BackgroundColor="#F5F5F5">
+
+            <!-- Карточка статуса -->
+            <Frame Padding="20" CornerRadius="16" BackgroundColor="White"
+                   BorderColor="Transparent" HasShadow="True">
+                <VerticalStackLayout Spacing="12">
+                    <HorizontalStackLayout Spacing="10">
+                        <Frame WidthRequest="14" HeightRequest="14" CornerRadius="7"
+                               BackgroundColor="{Binding StatusColor}"
+                               Padding="0" BorderColor="Transparent" />
+                        <Label Text="{Binding StatusText}"
+                               FontSize="16" FontAttributes="Bold"
+                               TextColor="{Binding StatusColor}" />
+                    </HorizontalStackLayout>
+                    <Button Text="{Binding TaskItem.IsCompleted,
+                                   Converter={StaticResource BoolToStatusBtnConverter}}"
+                            Command="{Binding ToggleStatusCommand}"
+                            BackgroundColor="{Binding StatusColor}"
+                            TextColor="White" CornerRadius="10"
+                            HeightRequest="44" FontSize="14" />
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- Режим просмотра -->
+            <Frame Padding="20" CornerRadius="16" BackgroundColor="White"
+                   BorderColor="Transparent" HasShadow="True"
+                   IsVisible="{Binding IsEditing, Converter={StaticResource InvertBoolConverter}}">
+                <VerticalStackLayout Spacing="14">
+                    <Label Text="{Binding TaskItem.Title}"
+                           FontSize="24" FontAttributes="Bold" TextColor="#1A1A2E" />
+
+                    <HorizontalStackLayout Spacing="8">
+                        <Frame Padding="8,4" CornerRadius="10"
+                               BackgroundColor="{Binding PriorityColor}"
+                               BorderColor="Transparent">
+                            <Label Text="{Binding TaskItem.Priority}"
+                                   FontSize="12" TextColor="White" FontAttributes="Bold" />
+                        </Frame>
+                        <Label Text="{Binding TaskItem.DueDate, StringFormat='Срок: {0:dd.MM.yyyy}'}"
+                               FontSize="14" TextColor="#888888" VerticalOptions="Center" />
+                    </HorizontalStackLayout>
+
+                    <BoxView HeightRequest="1" Color="#EEEEEE" />
+
+                    <Label Text="Описание" FontSize="13" TextColor="#AAAAAA" />
+                    <Label Text="{Binding TaskItem.Description}"
+                           FontSize="15" TextColor="#333333" LineBreakMode="WordWrap" />
+
+                    <!-- Местоположение -->
+                    <Label Text="{Binding LocationText}" FontSize="13" TextColor="#666666" />
+
+                    <!-- Фото задачи -->
+                    <Image Source="{Binding PhotoSource}" HeightRequest="200"
+                           Aspect="AspectFit" IsVisible="{Binding HasPhoto}" />
+
+                    <Button Text="✏️ Редактировать"
+                            Command="{Binding EditCommand}"
+                            BackgroundColor="#1A1A2E" TextColor="White"
+                            CornerRadius="10" HeightRequest="44" FontSize="14" />
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- Режим редактирования -->
+            <Frame Padding="20" CornerRadius="16" BackgroundColor="White"
+                   BorderColor="Transparent" HasShadow="True"
+                   IsVisible="{Binding IsEditing}">
+                <VerticalStackLayout Spacing="14">
+                    <Label Text="Редактирование" FontSize="20" FontAttributes="Bold" TextColor="#1A1A2E" />
+
+                    <Label Text="Название" FontSize="13" TextColor="#AAAAAA" />
+                    <Entry Text="{Binding EditTitle}" FontSize="16" BackgroundColor="#FAFAFA"
+                           Placeholder="Введите название" />
+
+                    <Label Text="Описание" FontSize="13" TextColor="#AAAAAA" />
+                    <Editor Text="{Binding EditDescription}" FontSize="15" HeightRequest="120"
+                            BackgroundColor="#FAFAFA" Placeholder="Введите описание" />
+
+                    <Label Text="Срок выполнения" FontSize="13" TextColor="#AAAAAA" />
+                    <DatePicker Date="{Binding EditDueDate}" MinimumDate="01/01/2025"
+                                MaximumDate="12/31/2030" FontSize="15" />
+
+                    <Label Text="Приоритет" FontSize="13" TextColor="#AAAAAA" />
+                    <HorizontalStackLayout Spacing="8">
+                        <Button Text="Высокий" Command="{Binding SetHighPriorityCommand}"
+                                BackgroundColor="#F44336" TextColor="White"
+                                FontSize="12" HeightRequest="36" CornerRadius="18" Padding="14,0" />
+                        <Button Text="Средний" Command="{Binding SetMediumPriorityCommand}"
+                                BackgroundColor="#FF9800" TextColor="White"
+                                FontSize="12" HeightRequest="36" CornerRadius="18" Padding="14,0" />
+                        <Button Text="Низкий" Command="{Binding SetLowPriorityCommand}"
+                                BackgroundColor="#4CAF50" TextColor="White"
+                                FontSize="12" HeightRequest="36" CornerRadius="18" Padding="14,0" />
+                    </HorizontalStackLayout>
+
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="10" Margin="0,8,0,0">
+                        <Button Text="💾 Сохранить" Command="{Binding SaveCommand}"
+                                BackgroundColor="#4CAF50" TextColor="White"
+                                CornerRadius="10" HeightRequest="44" FontSize="14" />
+                        <Button Grid.Column="1" Text="Отмена" Command="{Binding CancelEditCommand}"
+                                BackgroundColor="#9E9E9E" TextColor="White"
+                                CornerRadius="10" HeightRequest="44" FontSize="14" />
+                    </Grid>
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- Платформенные возможности -->
+            <Frame Padding="20" CornerRadius="16" BackgroundColor="White"
+                   BorderColor="Transparent" HasShadow="True">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Платформенные функции" FontSize="18" FontAttributes="Bold" TextColor="#1A1A2E" />
+
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="10" RowDefinitions="Auto,Auto" RowSpacing="10">
+                        <Button Text="📷 Сделать фото"
+                                Command="{Binding TakePhotoCommand}"
+                                BackgroundColor="#00BCD4" TextColor="White"
+                                CornerRadius="10" HeightRequest="44" FontSize="13" />
+                        <Button Grid.Column="1" Text="🖼️ Выбрать фото"
+                                Command="{Binding PickPhotoCommand}"
+                                BackgroundColor="#009688" TextColor="White"
+                                CornerRadius="10" HeightRequest="44" FontSize="13" />
+                        <Button Grid.Row="1" Text="📍 Геолокация"
+                                Command="{Binding GetLocationCommand}"
+                                BackgroundColor="#3F51B5" TextColor="White"
+                                CornerRadius="10" HeightRequest="44" FontSize="13" />
+                        <Button Grid.Row="1" Grid.Column="1" Text="🔔 Напоминание"
+                                Command="{Binding SetReminderCommand}"
+                                BackgroundColor="#FF5722" TextColor="White"
+                                CornerRadius="10" HeightRequest="44" FontSize="13" />
+                    </Grid>
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- Кнопки действий -->
+            <Frame Padding="20" CornerRadius="16" BackgroundColor="White"
+                   BorderColor="Transparent" HasShadow="True">
+                <VerticalStackLayout Spacing="10">
+                    <Button Text="🗑️ Удалить задачу"
+                            Command="{Binding DeleteCommand}"
+                            BackgroundColor="#F44336" TextColor="White"
+                            CornerRadius="10" HeightRequest="44" FontSize="14" />
+                    <Button Text="← Назад к списку"
+                            Command="{Binding GoBackCommand}"
+                            BackgroundColor="#607D8B" TextColor="White"
+                            CornerRadius="10" HeightRequest="44" FontSize="14" />
+                </VerticalStackLayout>
+            </Frame>
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

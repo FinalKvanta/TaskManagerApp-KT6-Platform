@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:TaskManagerApp.ViewModels"
+             x:Class="TaskManagerApp.Views.TaskListPage"
+             Title="Мои задачи">
+
+    <Grid RowDefinitions="Auto,Auto,Auto,Auto,*" Padding="16" BackgroundColor="#F5F5F5">
+
+        <!-- Заголовок -->
+        <VerticalStackLayout Grid.Row="0" Spacing="4" Padding="0,8,0,12">
+            <Label Text="Менеджер задач"
+                   FontSize="28" FontAttributes="Bold"
+                   TextColor="#1A1A2E" />
+            <Label Text="Управляйте своими делами"
+                   FontSize="14" TextColor="#888888" />
+        </VerticalStackLayout>
+
+        <!-- Статус синхронизации и индикатор загрузки -->
+        <VerticalStackLayout Grid.Row="1" Spacing="4" Padding="0,0,0,8">
+            <ActivityIndicator IsRunning="{Binding IsLoading}" IsVisible="{Binding IsLoading}"
+                               HeightRequest="24" Color="#1A1A2E" />
+            <Label Text="{Binding SyncStatus}" FontSize="12" TextColor="#666666"
+                   IsVisible="True" />
+        </VerticalStackLayout>
+
+        <!-- Поиск, фильтры и синхронизация -->
+        <VerticalStackLayout Grid.Row="2" Spacing="10" Padding="0,0,0,10">
+            <SearchBar Placeholder="Поиск задач..."
+                       Text="{Binding SearchText}"
+                       BackgroundColor="White"
+                       CancelButtonColor="#1A1A2E" />
+
+            <HorizontalStackLayout Spacing="8">
+                <Button Text="Все"
+                        Command="{Binding FilterAllCommand}"
+                        BackgroundColor="#1A1A2E" TextColor="White"
+                        FontSize="13" HeightRequest="36" CornerRadius="18"
+                        Padding="16,0" />
+                <Button Text="Активные"
+                        Command="{Binding FilterActiveCommand}"
+                        BackgroundColor="#FF9800" TextColor="White"
+                        FontSize="13" HeightRequest="36" CornerRadius="18"
+                        Padding="16,0" />
+                <Button Text="Завершённые"
+                        Command="{Binding FilterCompletedCommand}"
+                        BackgroundColor="#4CAF50" TextColor="White"
+                        FontSize="13" HeightRequest="36" CornerRadius="18"
+                        Padding="16,0" />
+            </HorizontalStackLayout>
+        </VerticalStackLayout>
+
+        <!-- Кнопки: синхронизация, экспорт, импорт -->
+        <HorizontalStackLayout Grid.Row="3" Spacing="8" Padding="0,0,0,10">
+            <Button Text="☁️ Синхронизация"
+                    Command="{Binding SyncFromCloudCommand}"
+                    BackgroundColor="#00BCD4" TextColor="White"
+                    FontSize="13" HeightRequest="36" CornerRadius="18"
+                    Padding="16,0" />
+            <Button Text="📤 Экспорт"
+                    Command="{Binding ExportCsvCommand}"
+                    BackgroundColor="#2196F3" TextColor="White"
+                    FontSize="13" HeightRequest="36" CornerRadius="18"
+                    Padding="16,0" />
+            <Button Text="📥 Импорт"
+                    Command="{Binding ImportCsvCommand}"
+                    BackgroundColor="#9C27B0" TextColor="White"
+                    FontSize="13" HeightRequest="36" CornerRadius="18"
+                    Padding="16,0" />
+        </HorizontalStackLayout>
+
+        <!-- Список задач -->
+        <CollectionView Grid.Row="4"
+                        ItemsSource="{Binding Tasks}"
+                        SelectionMode="Single"
+                        SelectedItem="{Binding SelectedTask}"
+                        SelectionChangedCommand="{Binding SelectTaskCommand}"
+                        SelectionChangedCommandParameter="{Binding SelectedTask}">
+            <CollectionView.EmptyView>
+                <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center" Spacing="8">
+                    <Label Text="📋" FontSize="48" HorizontalOptions="Center" />
+                    <Label Text="Задач не найдено" FontSize="18" TextColor="#888888" HorizontalOptions="Center" />
+                </VerticalStackLayout>
+            </CollectionView.EmptyView>
+
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Frame Margin="0,4" Padding="14" CornerRadius="12"
+                           BackgroundColor="White" BorderColor="Transparent"
+                           HasShadow="True">
+                        <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,Auto" ColumnSpacing="12">
+                            <Frame Grid.RowSpan="2" WidthRequest="44" HeightRequest="44"
+                                   CornerRadius="22" Padding="0"
+                                   BackgroundColor="{Binding IsCompleted, Converter={StaticResource BoolToColorConverter}}"
+                                   VerticalOptions="Center">
+                                <Label Text="{Binding IsCompleted, Converter={StaticResource BoolToIconConverter}}"
+                                       FontSize="20" HorizontalOptions="Center" VerticalOptions="Center" />
+                            </Frame>
+                            <Label Grid.Column="1" Grid.Row="0"
+                                   Text="{Binding Title}"
+                                   FontSize="16" FontAttributes="Bold"
+                                   TextColor="#1A1A2E" LineBreakMode="TailTruncation" />
+                            <Label Grid.Column="1" Grid.Row="1"
+                                   Text="{Binding DueDate, StringFormat='{0:dd.MM.yyyy}'}"
+                                   FontSize="12" TextColor="#999999" />
+                            <Frame Grid.Column="2" Grid.RowSpan="2"
+                                   VerticalOptions="Center"
+                                   Padding="10,5" CornerRadius="12"
+                                   BackgroundColor="{Binding Priority, Converter={StaticResource PriorityColorConverter}}"
+                                   BorderColor="Transparent">
+                                <Label Text="{Binding Priority}"
+                                       FontSize="11" TextColor="White" FontAttributes="Bold" />
+                            </Frame>
+                        </Grid>
+                    </Frame>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <!-- Кнопка добавления -->
+        <Button Grid.Row="4"
+                Text="＋"
+                FontSize="28"
+                WidthRequest="60" HeightRequest="60"
+                CornerRadius="30"
+                BackgroundColor="#1A1A2E" TextColor="White"
+                HorizontalOptions="End" VerticalOptions="End"
+                Margin="0,0,8,16"
+                Command="{Binding AddTaskCommand}" />
+    </Grid>
+</ContentPage>
